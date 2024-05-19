@@ -17,10 +17,12 @@ Run following command from [repo]/src
 ```bash
 python industrialVisualization.py
 ```
+### Visualization
+
+![alt text](images/visualization.png)
 
 ## Authors and acknowledgment
-
-* Brian Morera Madriz (Brianjose37@gmail.com)
+* Brian Morera Madriz (brianjose37@gmail.com)
 * Alejandro Arroyo (alearroyov98@GitHub)
 
 ## License
