@@ -16,7 +16,7 @@ class AreaVisualization:
             raise Exception('Type parameter should be {}, but has value=[{}]'.format(TYPES), type)
 
 class VisualizationLayout:
-    def __init__(self, rows, cols, visualizations,
+    def __init__(self, rows: int, cols: int, visualizations: list, title: str,
                  horizontal_spacing=0.02,
                  vertical_spacing=0.05,
                  border_layout_color='blue',
@@ -25,6 +25,7 @@ class VisualizationLayout:
         self.rows = rows
         self.cols = cols
         self.visualizations = visualizations
+        self.title = title
 
         # Layout border
         self.color = border_layout_color
@@ -141,10 +142,10 @@ class VisualizationLayout:
             )
         )
 
-    def show(self):
+    def get_layout(self):
         self.fig.update_layout(
-            title_text="4 Different Visualizations in One Window",
+            title_text=self.title,
             height=900,
             showlegend=False
         )
-        self.fig.show()
+        return self.fig
