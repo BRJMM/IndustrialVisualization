@@ -7,7 +7,7 @@ IndustrialVisualization
 ## Prerequisites
 
 ```bash
-pip install plotly
+pip install pandas plotly dash dash_daq
 ```
 
 ## Usage
