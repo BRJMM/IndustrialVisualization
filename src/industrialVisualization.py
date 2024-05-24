@@ -123,9 +123,9 @@ def update_graph(selected_date, shift_value, n_intervals, n_clicks, interval_dis
     print('Clicks=[{}], Shift=[{}], Intervals=[{}], Current Hour=[{}], Interval disabled=[{}]'.format(n_clicks, shift_value, n_intervals, progress_value, interval_disabled))
     filtered_df = df[df['datetime'] == selected_date + timedelta(hours=progress_value)]
 
-    run_condition = n_clicks % 2 != 0 and progress_value <= HOURS_IN_SHIFT - 1
+    run_condition = n_clicks % 2 != 0 and progress_value <= HOURS_IN_SHIFT
     interval_disabled = not run_condition
-    progress_value = 0 if not run_condition else progress_value + 1
+    progress_value = progress_value if not run_condition else progress_value + 1
     progress_value = 0 if progress_value > HOURS_IN_SHIFT else progress_value
     
     G = nx.from_pandas_edgelist(filtered_df, 'source', 'target', ['weight'])
