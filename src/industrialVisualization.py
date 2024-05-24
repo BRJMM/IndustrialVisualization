@@ -14,9 +14,12 @@ HOURS_IN_SHIFT = 8
 COLUMNS_IN_LAYOUT = 10
 NETWORK_GRAPH_COLUMNS = 8
 HOURS_IN_DAY = 24
-BORDER_LAYOUT_COLOR = 'blue'
+BORDER_LAYOUT_COLOR = 'black'
+
+print('\n\n\n\n\n\n\n\nStarting execution ........................................\n')
 
 inputNumberCreator = DccInputNumber()
+progress_value = 0
 
 def generate_mock_data(start_date, days):
     data = []
@@ -39,7 +42,6 @@ def generate_mock_data(start_date, days):
 
 df = generate_mock_data(datetime(2023, 1, 1), 2)
 dates = df['datetime'].dt.date.unique()
-print(df)
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
@@ -56,10 +58,10 @@ app.layout = html.Div(style={
         'padding': '10px'
     }, children=[
         dbc.Button("Play", id="play-button", n_clicks=0, style={'width': '100%', 'margin-bottom': '10px'}),
-        dcc.Interval(id='interval-component', interval=500, n_intervals=0, disabled=True),
+        dcc.Interval(id='interval-component', interval=1000, n_intervals=0, disabled=True),
         dbc.Progress(id="progress-bar", value=0, max=HOURS_IN_SHIFT, striped=True, animated=True, style={'width': '100%'}),
         html.Div(style={'display': 'flex', 'justify-content': 'space-between', 'margin-top': '10px'}, children=[
-            html.Span('|', style={'margin': '0 2px'}) for _ in range(HOURS_IN_SHIFT + 1)
+            html.Span('|', style={'margin': '0 2px'}) for _ in range(HOURS_IN_SHIFT+1)
         ])
     ], id='BUTTON_PLAY_AND_PROGRESS_BAR'),
 
@@ -67,12 +69,14 @@ app.layout = html.Div(style={
         'border': '2px solid {}'.format(BORDER_LAYOUT_COLOR),
         'padding': '10px'
     }, children=[
+        html.Label("Shift"),
         dcc.Dropdown(
             id='shift-dropdown',
             options=[{'label': i, 'value': i} for i in range(1, TOTAL_SHIFT+1)],
             value=1,
             style={'margin-bottom': '10px'}
         ),
+        html.Label("Date"),
         dcc.Dropdown(
             id='date-dropdown',
             options=[{'label': date, 'value': str(date)} for date in dates],
@@ -114,13 +118,15 @@ app.layout = html.Div(style={
     [State('interval-component', 'disabled')]
 )
 def update_graph(selected_date, shift_value, n_intervals, n_clicks, interval_disabled):
+    global progress_value
     selected_date = pd.to_datetime(selected_date)
-    current_hour = n_intervals % HOURS_IN_SHIFT if not interval_disabled else 0
-    print('Shift=[{}], Intervals=[{}], Current Hour=[{}], Interval disabled=[{}]'.format(shift_value, n_intervals, current_hour, interval_disabled))
-    filtered_df = df[df['datetime'] == selected_date + timedelta(hours=current_hour)]
+    print('Clicks=[{}], Shift=[{}], Intervals=[{}], Current Hour=[{}], Interval disabled=[{}]'.format(n_clicks, shift_value, n_intervals, progress_value, interval_disabled))
+    filtered_df = df[df['datetime'] == selected_date + timedelta(hours=progress_value)]
 
-    progress_value = current_hour
-    interval_disabled = not interval_disabled if n_clicks % 2 == 1 else interval_disabled
+    run_condition = n_clicks % 2 != 0 and progress_value <= HOURS_IN_SHIFT - 1
+    interval_disabled = not run_condition
+    progress_value = 0 if not run_condition else progress_value + 1
+    progress_value = 0 if progress_value > HOURS_IN_SHIFT else progress_value
     
     G = nx.from_pandas_edgelist(filtered_df, 'source', 'target', ['weight'])
     
