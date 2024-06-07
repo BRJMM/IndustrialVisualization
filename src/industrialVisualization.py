@@ -8,6 +8,7 @@ import plotly.graph_objs as go
 import dash_bootstrap_components as dbc
 
 from dccClassWrappers import DccInputNumber
+from DataPreprocessor import DataPreprocessor
 
 TOTAL_SHIFT = 3
 HOURS_IN_SHIFT = 8
@@ -41,6 +42,13 @@ def generate_mock_data(start_date, days):
     return pd.DataFrame(data)
 
 df = generate_mock_data(datetime(2023, 1, 1), 2)
+print(df)
+data_processor = DataPreprocessor('C:\\Users\\brianmorera\\OneDrive - Microsoft\\Documents\\Personal\\TEC\\Cursos\\Visualizacion de la Informacion\\IndustrialVisualization\\data\\data.csv')
+corr = data_processor.GetCorrelation()
+print(corr)
+
+
+
 dates = df['datetime'].dt.date.unique()
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
