@@ -8,7 +8,7 @@ import plotly.graph_objs as go
 import dash_bootstrap_components as dbc
 
 from dccClassWrappers import DccInputNumber
-from DataPreprocessor import DataPreprocessor
+from dataPreprocessor import DataPreprocessor
 
 TOTAL_SHIFT = 3
 HOURS_IN_SHIFT = 8
@@ -42,17 +42,12 @@ def generate_mock_data(start_date, days):
     return pd.DataFrame(data)
 
 df = generate_mock_data(datetime(2023, 1, 1), 2)
-print(df)
 data_processor = DataPreprocessor('C:\\Users\\brianmorera\\OneDrive - Microsoft\\Documents\\Personal\\TEC\\Cursos\\Visualizacion de la Informacion\\IndustrialVisualization\\data\\data.csv')
-corr = data_processor.GetCorrelation()
-print(corr)
-
-
+data_processor.GetData('2023-06-22 14:17:51.128885', 2, 0.3)
 
 dates = df['datetime'].dt.date.unique()
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-
 app.layout = html.Div(style={
     'display': 'grid',
     'grid-template-columns': '{}fr {}fr'.format(NETWORK_GRAPH_COLUMNS, COLUMNS_IN_LAYOUT-NETWORK_GRAPH_COLUMNS),
@@ -128,7 +123,7 @@ app.layout = html.Div(style={
 def update_graph(selected_date, shift_value, n_intervals, n_clicks, interval_disabled):
     global progress_value
     selected_date = pd.to_datetime(selected_date)
-    print('Clicks=[{}], Shift=[{}], Intervals=[{}], Current Hour=[{}], Interval disabled=[{}]'.format(n_clicks, shift_value, n_intervals, progress_value, interval_disabled))
+    #print('Clicks=[{}], Shift=[{}], Intervals=[{}], Current Hour=[{}], Interval disabled=[{}]'.format(n_clicks, shift_value, n_intervals, progress_value, interval_disabled))
     filtered_df = df[df['datetime'] == selected_date + timedelta(hours=progress_value)]
 
     run_condition = n_clicks % 2 != 0 and progress_value <= HOURS_IN_SHIFT
