@@ -43,7 +43,8 @@ def generate_mock_data(start_date, days):
 
 df = generate_mock_data(datetime(2023, 1, 1), 2)
 data_processor = DataPreprocessor('C:\\Users\\brianmorera\\OneDrive - Microsoft\\Documents\\Personal\\TEC\\Cursos\\Visualizacion de la Informacion\\IndustrialVisualization\\data\\data.csv')
-data_processor.GetData('2023-06-22 14:17:51.128885', 2, 0.3)
+data = data_processor.GetData('2023-06-22 14:17:51.128885', 2, 0.7)
+print(data)
 
 dates = df['datetime'].dt.date.unique()
 
