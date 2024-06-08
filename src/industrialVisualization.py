@@ -22,31 +22,8 @@ print('\n\n\n\n\n\n\n\nStarting execution ......................................
 inputNumberCreator = DccInputNumber()
 progress_value = 0
 
-def generate_mock_data(start_date, days):
-    data = []
-    np.random.seed(42)
-    for day in range(days):
-        for hour in range(HOURS_IN_DAY):
-            date = start_date + timedelta(days=day, hours=hour)
-            num_nodes = np.random.randint(5, 15)
-            num_edges = np.random.randint(4, num_nodes*(num_nodes-1)//2)
-            
-            G = nx.gnm_random_graph(num_nodes, num_edges)
-            for edge in G.edges():
-                data.append({
-                    'datetime': date,
-                    'source': edge[0],
-                    'target': edge[1],
-                    'weight': np.random.rand()
-                })
-    return pd.DataFrame(data)
-
-df = generate_mock_data(datetime(2023, 1, 1), 2)
 data_processor = DataPreprocessor('C:\\Users\\brianmorera\\OneDrive - Microsoft\\Documents\\Personal\\TEC\\Cursos\\Visualizacion de la Informacion\\IndustrialVisualization\\data\\data.csv')
-data = data_processor.GetData('2023-06-22 14:17:51.128885', 2, 0.7)
-print(data)
-
-dates = df['datetime'].dt.date.unique()
+dates = data_processor.GetDates()
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div(style={
@@ -62,7 +39,7 @@ app.layout = html.Div(style={
         'padding': '10px'
     }, children=[
         dbc.Button("Play", id="play-button", n_clicks=0, style={'width': '100%', 'margin-bottom': '10px'}),
-        dcc.Interval(id='interval-component', interval=1000, n_intervals=0, disabled=True),
+        dcc.Interval(id='interval-component', interval=500, n_intervals=0, disabled=True),
         dbc.Progress(id="progress-bar", value=0, max=HOURS_IN_SHIFT, striped=True, animated=True, style={'width': '100%'}),
         html.Div(style={'display': 'flex', 'justify-content': 'space-between', 'margin-top': '10px'}, children=[
             html.Span('|', style={'margin': '0 2px'}) for _ in range(HOURS_IN_SHIFT+1)
@@ -124,8 +101,8 @@ app.layout = html.Div(style={
 def update_graph(selected_date, shift_value, n_intervals, n_clicks, interval_disabled):
     global progress_value
     selected_date = pd.to_datetime(selected_date)
-    #print('Clicks=[{}], Shift=[{}], Intervals=[{}], Current Hour=[{}], Interval disabled=[{}]'.format(n_clicks, shift_value, n_intervals, progress_value, interval_disabled))
-    filtered_df = df[df['datetime'] == selected_date + timedelta(hours=progress_value)]
+    print('Clicks=[{}], Shift=[{}], Intervals=[{}], Shift Hour=[{}], Interval disabled=[{}], Date=[{}]'.format(n_clicks, shift_value, n_intervals, progress_value, interval_disabled, selected_date))
+    filtered_df = data_processor.GetData(selected_date, shift_value, progress_value, 0.9)
 
     run_condition = n_clicks % 2 != 0 and progress_value <= HOURS_IN_SHIFT
     interval_disabled = not run_condition
