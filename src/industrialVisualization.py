@@ -1,6 +1,5 @@
 import pandas as pd
 import networkx as nx
-from datetime import datetime, timedelta
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
@@ -8,6 +7,7 @@ import dash_bootstrap_components as dbc
 
 from dccClassWrappers import DccInputNumber
 from dataPreprocessor import DataPreprocessor
+from machineSelector import MachineSelector
 
 TOTAL_SHIFT = 3
 HOURS_IN_SHIFT = 8
@@ -18,10 +18,13 @@ BORDER_LAYOUT_COLOR = 'black'
 
 print('\n\n\n\n\n\n\n\nStarting execution ........................................\n')
 
+machineSelector = MachineSelector('C:\\Users\\brianmorera\\OneDrive - Microsoft\\Documents\\Personal\\TEC\\Cursos\\Visualizacion de la Informacion\\IndustrialVisualization\\data\\data.csv')
+input_file_path = machineSelector.ExecuteSelection('primary')
+
 inputNumberCreator = DccInputNumber()
 progress_value = 0
 
-data_processor = DataPreprocessor('C:\\Users\\brianmorera\\OneDrive - Microsoft\\Documents\\Personal\\TEC\\Cursos\\Visualizacion de la Informacion\\IndustrialVisualization\\data\\data.csv')
+data_processor = DataPreprocessor(input_file_path)
 dates = data_processor.GetDates()
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
