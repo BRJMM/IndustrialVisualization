@@ -31,9 +31,12 @@ class DataPreprocessor():
     def __shiftIntToString(self, shiftAsInt: int) -> str:
         if shiftAsInt == 1:
             return 'Shift_I'
-        if shiftAsInt == 2:
+        elif shiftAsInt == 2:
             return 'Shift_II'
-        return 'Shift_III'
+        elif shiftAsInt == 3:
+            return 'Shift_III'
+        else:
+            raise Exception('__setHourShiftRange: shift should be [1,2,3]')
 
     def __filterByDate(self, date) -> None:
         self.selectedDate = pd.to_datetime(date).date()
@@ -56,9 +59,10 @@ class DataPreprocessor():
 
     def __filterByHour(self, hour:int) -> pd.DataFrame:
         copy = self.df.copy()
+        hour = 0 if hour >= HOURS_IN_SHIFT else hour
         return copy[copy['date_time'].dt.hour == self.selectedShiftHourRange[hour]]
 
-    def __getCorrelationMatrix(self, data:pd.DataFrame, magnitude, useNaN = False) -> pd.DataFrame:
+    def __getCorrelationMatrix(self, data:pd.DataFrame, magnitude: float, useNaN = False) -> pd.DataFrame:
         correlation_matrix = data.select_dtypes(include='number').corr()
         mask = correlation_matrix.abs() >= magnitude
         correlation_matrix = correlation_matrix.where(mask)
@@ -69,26 +73,14 @@ class DataPreprocessor():
     def __restart(self) -> None:
         self.df = self.df_goal.copy()
 
-    def GetData(self, date, shift:int, shiftHour:int, magnitude:int) -> pd.DataFrame:
-        data_in_hour = []
+    def GetData(self, date, shift:int, shiftHour:int, magnitude:float) -> pd.DataFrame:
         # Filtering by day and shift
         self.__filterByDate(date)
         self.__filterByShift(shift)
         data = self.__filterByHour(shiftHour)
-        corr_matrix = self.__getCorrelationMatrix(data, magnitude, True)
-        correlation_variables = corr_matrix.columns
-        for column in correlation_variables:
-            for row in correlation_variables:
-                value = round(corr_matrix[column][row], 6)
-                if not np.isnan(value) and column != row:
-                    data_in_hour.append({
-                        'datetime': self.selectedDate,
-                        'source': column,
-                        'target': row,
-                        'weight': value
-                    })
+        corr_matrix = self.__getCorrelationMatrix(data, magnitude, False)
         self.__restart()
-        return pd.DataFrame(data_in_hour)
+        return corr_matrix
 
     def GetDates(self):
         return self.df['date_time'].dt.date.unique()

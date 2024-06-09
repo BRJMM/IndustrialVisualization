@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import networkx as nx
 from datetime import datetime, timedelta
 from dash import Dash, dcc, html
@@ -39,7 +38,7 @@ app.layout = html.Div(style={
         'padding': '10px'
     }, children=[
         dbc.Button("Play", id="play-button", n_clicks=0, style={'width': '100%', 'margin-bottom': '10px'}),
-        dcc.Interval(id='interval-component', interval=500, n_intervals=0, disabled=True),
+        dcc.Interval(id='interval-component', interval=1000, n_intervals=0, disabled=True),
         dbc.Progress(id="progress-bar", value=0, max=HOURS_IN_SHIFT, striped=True, animated=True, style={'width': '100%'}),
         html.Div(style={'display': 'flex', 'justify-content': 'space-between', 'margin-top': '10px'}, children=[
             html.Span('|', style={'margin': '0 2px'}) for _ in range(HOURS_IN_SHIFT+1)
@@ -94,23 +93,24 @@ app.layout = html.Div(style={
      Output('interval-component', 'disabled')],
     [Input('date-dropdown', 'value'),
      Input('shift-dropdown', 'value'),
-     Input('interval-component', 'n_intervals'),
-     Input('play-button', 'n_clicks')],
+     Input('correlated-threshold', 'value'),
+     Input('play-button', 'n_clicks'),
+     Input('interval-component', 'n_intervals')],
     [State('interval-component', 'disabled')]
 )
-def update_graph(selected_date, shift_value, n_intervals, n_clicks, interval_disabled):
+def update_graph(selected_date, shift_value, correlation_threshold, n_clicks, n_intervals, interval_disabled):
     global progress_value
     selected_date = pd.to_datetime(selected_date)
-    print('Clicks=[{}], Shift=[{}], Intervals=[{}], Shift Hour=[{}], Interval disabled=[{}], Date=[{}]'.format(n_clicks, shift_value, n_intervals, progress_value, interval_disabled, selected_date))
-    filtered_df = data_processor.GetData(selected_date, shift_value, progress_value, 0.9)
+    filtered_df = data_processor.GetData(selected_date, shift_value, progress_value, correlation_threshold)
 
     run_condition = n_clicks % 2 != 0 and progress_value <= HOURS_IN_SHIFT
     interval_disabled = not run_condition
     progress_value = progress_value if not run_condition else progress_value + 1
     progress_value = 0 if progress_value > HOURS_IN_SHIFT else progress_value
-    
-    G = nx.from_pandas_edgelist(filtered_df, 'source', 'target', ['weight'])
-    
+
+    print('Date=[{}], Shift=[{}], Correlation Threshold=[{}], Shift Hour=[{}], Clicks=[{}], Interval disabled=[{}]'.format(selected_date, shift_value, correlation_threshold, progress_value, n_clicks, interval_disabled))
+
+    G = nx.from_pandas_adjacency(filtered_df)
     pos = nx.spring_layout(G)
     edge_trace = []
     
@@ -120,7 +120,7 @@ def update_graph(selected_date, shift_value, n_intervals, n_clicks, interval_dis
         edge_trace.append(go.Scatter(
             x=[x0, x1, None],
             y=[y0, y1, None],
-            line=dict(width=edge[2]['weight']*5, color='grey'),
+            line=dict(width=abs(edge[2]['weight'])*5, color='grey'),
             hoverinfo='none',
             mode='lines'
         ))
@@ -164,7 +164,7 @@ def update_graph(selected_date, shift_value, n_intervals, n_clicks, interval_dis
                         xaxis=dict(showgrid=False, zeroline=False),
                         yaxis=dict(showgrid=False, zeroline=False)
                     ))
-
+    
     return fig, progress_value, interval_disabled
 
 if __name__ == '__main__':
