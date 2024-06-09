@@ -9,6 +9,7 @@ from dccClassWrappers import DccInputNumber
 from dataPreprocessor import DataPreprocessor
 from machineSelector import MachineSelector
 from contextParameter import ContextParameter
+from correlationTracker import CorrelationTracker
 
 TOTAL_SHIFT = 3
 HOURS_IN_SHIFT = 8
@@ -29,6 +30,7 @@ data_processor = DataPreprocessor(input_file_path)
 dates = data_processor.GetDates()
 
 contextParameter = ContextParameter()
+correlationTracker = CorrelationTracker()
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div(style={
@@ -100,23 +102,27 @@ app.layout = html.Div(style={
     [Input('date-dropdown', 'value'),
      Input('shift-dropdown', 'value'),
      Input('correlated-threshold', 'value'),
+     Input('correlation-change', 'value'),
      Input('play-button', 'n_clicks'),
      Input('interval-component', 'n_intervals')],
     [State('interval-component', 'disabled')]
 )
-def update_graph(selected_date, shift_value, correlation_threshold, n_clicks, n_intervals, interval_disabled):
+def update_graph(selected_date, shift_value, correlation_threshold, correlation_change, n_clicks, n_intervals, interval_disabled):
     global progress_value
-    contextParameter.SetState(str(selected_date), str(shift_value), correlation_threshold, 0.2222)
+    contextParameter.SetState(str(selected_date), str(shift_value), correlation_threshold, correlation_change)
     has_changed = contextParameter.HasAnyChanged()
     selected_date = pd.to_datetime(selected_date)
     filtered_df = data_processor.GetData(selected_date, shift_value, progress_value, correlation_threshold)
+
+    correlationTracker.SetCorrChangeValue(corr_change=correlation_change)
+    correlationTracker.SetCurrentStatus(filtered_df)
 
     run_condition = n_clicks % 2 != 0 and progress_value <= HOURS_IN_SHIFT
     interval_disabled = not run_condition
     progress_value = progress_value if not run_condition else progress_value + 1
     progress_value = 0 if ((progress_value > HOURS_IN_SHIFT) or has_changed) else progress_value
 
-    print('Date=[{}], Shift=[{}], Correlation Threshold=[{}], Shift Hour=[{}], Clicks=[{}], Interval disabled=[{}], Parameter change=[{}]'.format(selected_date, shift_value, correlation_threshold, progress_value, n_clicks, interval_disabled, has_changed))
+    print('Date=[{}], Shift=[{}], Correlation Threshold=[{}], Correlation Change=[{}], Shift Hour=[{}], Clicks=[{}], Interval disabled=[{}], Parameter change=[{}]'.format(selected_date, shift_value, correlation_threshold, correlation_change, progress_value, n_clicks, interval_disabled, has_changed))
 
     G = nx.from_pandas_adjacency(filtered_df)
     pos = nx.spring_layout(G)
@@ -128,10 +134,9 @@ def update_graph(selected_date, shift_value, correlation_threshold, n_clicks, n_
         edge_trace.append(go.Scatter(
             x=[x0, x1, None],
             y=[y0, y1, None],
-            line=dict(width=abs(edge[2]['weight'])*5, color='grey'),
+            line=dict(width=abs(edge[2]['weight'])*5, color=correlationTracker.GetColor(edge[0], edge[1])),
             hoverinfo='none',
-            mode='lines'
-        ))
+            mode='lines'))
     
     node_trace = go.Scatter(
         x=[],
