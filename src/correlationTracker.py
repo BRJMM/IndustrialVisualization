@@ -34,8 +34,6 @@ class CorrelationTracker:
                 color = self.__getColor(key, curr_corr_value)
                 self.tracker_value[key] = curr_corr_value
                 self.tracker_color[key] = color
-                if key == 'pumpspeed_rpm-pa7b3_mm':
-                    print('Edge=[{}], Color=[{}], Value=[{}]'.format(key, self.tracker_color[key], self.tracker_value[key]))
     
     def GetColor(self, column, row) -> str:
          keya = self.__getKey(column, row)
