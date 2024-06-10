@@ -1,5 +1,4 @@
-# IndustrialVisualization
-IndustrialVisualization
+# Visualization of correlations in industrial process variables
 
 ## Description
 
