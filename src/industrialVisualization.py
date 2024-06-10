@@ -12,7 +12,7 @@ from contextParameter import ContextParameter
 from correlationTracker import CorrelationTracker
 
 TOTAL_SHIFT = 3
-HOURS_IN_SHIFT = 8
+HOURS_IN_SHIFT = 1440
 COLUMNS_IN_LAYOUT = 10
 NETWORK_GRAPH_COLUMNS = 8
 HOURS_IN_DAY = 24
@@ -20,7 +20,7 @@ BORDER_LAYOUT_COLOR = 'black'
 
 print('\n\n\n\n\n\n\n\nStarting execution ........................................\n')
 
-machineSelector = MachineSelector('C:\\Users\\brianmorera\\OneDrive - Microsoft\\Documents\\Personal\\TEC\\Cursos\\Visualizacion de la Informacion\\IndustrialVisualization\\data\\data.csv')
+machineSelector = MachineSelector('/home/craav/pCloudDrive/Computer_Science_Master/Visualizacion_Informacion/Proyecto/IndustrialVisualization/data/test_data.csv')
 input_file_path = machineSelector.ExecuteSelection('primary')
 
 inputNumberCreator = DccInputNumber()
