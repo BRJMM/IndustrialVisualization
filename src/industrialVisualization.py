@@ -21,7 +21,7 @@ hours_labels = ['Shift Start','First Hour', 'Second Hour', 'Third Hour', 'Fourth
 
 print('\n\n\n\n\n\n\n\nStarting execution ........................................\n')
 
-machineSelector = MachineSelector('/home/craav/pCloudDrive/Computer_Science_Master/Visualizacion_Informacion/Proyecto/IndustrialVisualization/data/test_data.csv')
+machineSelector = MachineSelector('/home/craav/pCloudDrive/Computer_Science_Master/Visualizacion_Informacion/Proyecto/IndustrialVisualization/data/data.csv')
 input_file_path = machineSelector.ExecuteSelection('secundary')
 
 inputNumberCreator = DccInputNumber()
@@ -110,7 +110,7 @@ app.layout = html.Div(style={
     [Input('toggle-filter-button', 'n_clicks')]
 )
 def update_button_color(n_clicks):
-    color = 'green' if n_clicks % 2 != 0 else 'red'
+    color = 'green' if n_clicks % 2 == 0 else 'red'
     return {'width': '100%', 'background-color': color}
 
 @app.callback(

@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from datetime import time
+from datetime import time, timedelta
 
 HOURS_IN_SHIFT = 8
 
@@ -39,8 +39,14 @@ class DataPreprocessor():
             raise Exception('__setHourShiftRange: shift should be [1,2,3]')
 
     def __filterByDate(self, date) -> None:
+        #   3.5. New column 'date' for future merge
+        self.df['only_date'] = self.df['date_time'].dt.date
+        #   3.6. Last day assignment for time between 00:00 to 06:00
+        self.df.loc[(self.df['date_time'].dt.time >= time(0,0,0)) & 
+                      (self.df['date_time'].dt.time < time(6,0,0)),'only_date'] = self.df['only_date'] - timedelta(days=1)
         self.selectedDate = pd.to_datetime(date).date()
-        self.df = self.df[self.df['date_time'].dt.date == self.selectedDate]
+        self.df = self.df[self.df['only_date'] == self.selectedDate]
+        print(self.df)
 
     def __setHourShiftRange(self, shiftAsInt: int) -> None:
         if shiftAsInt == 1:
