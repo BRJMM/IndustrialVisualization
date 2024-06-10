@@ -7,7 +7,7 @@ IndustrialVisualization
 ## Prerequisites
 
 ```bash
-pip install pandas plotly dash dash_daq
+pip install pandas plotly dash dash_daq networkx
 ```
 
 ## Usage
@@ -19,7 +19,7 @@ python industrialVisualization.py
 ```
 ### Visualization
 
-![alt text](images/visualization.png)
+![alt text](images/image.png)
 
 ## Authors and acknowledgment
 * Brian Morera Madriz (brianjose37@gmail.com)

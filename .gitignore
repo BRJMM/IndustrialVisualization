@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+**/primary_drumpress_db.csv
+**/secondary_drumpress_db.csv
 
 # C extensions
 *.so

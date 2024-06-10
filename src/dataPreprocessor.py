@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from datetime import time, timedelta
 
 HOURS_IN_SHIFT = 8
