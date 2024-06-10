@@ -17,18 +17,19 @@ COLUMNS_IN_LAYOUT = 10
 NETWORK_GRAPH_COLUMNS = 8
 HOURS_IN_DAY = 24
 BORDER_LAYOUT_COLOR = 'black'
+hours_labels = ['Shift Start','First Hour', 'Second Hour', 'Third Hour', 'Fourth Hour', 'Fifth Hour', 'Sixth Hour', 'Seventh Hour', 'Eighth Hour']
 
 print('\n\n\n\n\n\n\n\nStarting execution ........................................\n')
 
-machineSelector = MachineSelector('C:\\Users\\brianmorera\\OneDrive - Microsoft\\Documents\\Personal\\TEC\\Cursos\\Visualizacion de la Informacion\\IndustrialVisualization\\data\\data.csv')
-input_file_path = machineSelector.ExecuteSelection('primary')
+machineSelector = MachineSelector('/home/craav/pCloudDrive/Computer_Science_Master/Visualizacion_Informacion/Proyecto/IndustrialVisualization/data/test_data.csv')
+input_file_path = machineSelector.ExecuteSelection('secundary')
 
 inputNumberCreator = DccInputNumber()
 progress_value = 0
 
 data_processor = DataPreprocessor(input_file_path)
 dates = data_processor.GetDates()
-
+#Fruchterman-Reingold
 contextParameter = ContextParameter()
 correlationTracker = CorrelationTracker()
 
@@ -46,11 +47,17 @@ app.layout = html.Div(style={
         'padding': '10px'
     }, children=[
         dbc.Button("Play", id="play-button", n_clicks=0, style={'width': '100%', 'margin-bottom': '10px'}),
-        dcc.Interval(id='interval-component', interval=1000, n_intervals=0, disabled=True),
+        dcc.Interval(id='interval-component', interval=3000, n_intervals=0, disabled=True),
         dbc.Progress(id="progress-bar", value=0, max=HOURS_IN_SHIFT, striped=True, animated=True, style={'width': '100%'}),
-        html.Div(style={'display': 'flex', 'justify-content': 'space-between', 'margin-top': '10px'}, children=[
-            html.Span('|', style={'margin': '0 2px'}) for _ in range(HOURS_IN_SHIFT+1)
-        ])
+        html.Div(
+            style={'display': 'flex', 'justify-content': 'space-between', 'margin-top': '10px'}, 
+            children=[
+                html.Div(style={'text-align': 'center'}, children=[
+                    html.Span('|', style={'margin': '0 2px'}), 
+                    html.Div(label, style={'font-size': '12px'})
+                ]) for label in hours_labels
+            ]
+        )
     ], id='BUTTON_PLAY_AND_PROGRESS_BAR'),
 
     html.Div(style={
@@ -91,9 +98,20 @@ app.layout = html.Div(style={
         html.Label("Correlated Threshold"),
         inputNumberCreator.create(id='correlated-threshold'),
         html.Label("Correlation Change"),
-        inputNumberCreator.create(id='correlation-change', style={'width': '100%'})
+        inputNumberCreator.create(id='correlation-change', style={'width': '100%'}),
+        html.Div(style={'margin-top': '10px'}, children=[
+            dbc.Button("Filter by Running", id="toggle-filter-button", n_clicks=0, style={'width': '100%'})
+        ])
     ], id='CONFIG_THRESHOLD')
 ])
+
+@app.callback(
+    Output('toggle-filter-button', 'style'),
+    [Input('toggle-filter-button', 'n_clicks')]
+)
+def update_button_color(n_clicks):
+    color = 'green' if n_clicks % 2 != 0 else 'red'
+    return {'width': '100%', 'background-color': color}
 
 @app.callback(
     [Output('network-graph', 'figure'),
@@ -104,15 +122,20 @@ app.layout = html.Div(style={
      Input('correlated-threshold', 'value'),
      Input('correlation-change', 'value'),
      Input('play-button', 'n_clicks'),
-     Input('interval-component', 'n_intervals')],
+     Input('interval-component', 'n_intervals'),
+     Input('toggle-filter-button', 'n_clicks')],
     [State('interval-component', 'disabled')]
 )
-def update_graph(selected_date, shift_value, correlation_threshold, correlation_change, n_clicks, n_intervals, interval_disabled):
+def update_graph(selected_date, shift_value, correlation_threshold, correlation_change, n_clicks, n_intervals,toggle_clicks, interval_disabled):
     global progress_value
     contextParameter.SetState(str(selected_date), str(shift_value), correlation_threshold, correlation_change)
     has_changed = contextParameter.HasAnyChanged()
     selected_date = pd.to_datetime(selected_date)
-    filtered_df = data_processor.GetData(selected_date, shift_value, progress_value, correlation_threshold)
+
+    # Determine if filter should be applied based on button click
+    apply_filter = True if toggle_clicks % 2 == 0 else False
+
+    filtered_df = data_processor.GetData(selected_date, shift_value, progress_value, correlation_threshold, apply_filter)
 
     correlationTracker.SetCorrChangeValue(corr_change=correlation_change)
     correlationTracker.SetCurrentStatus(filtered_df)
@@ -125,7 +148,7 @@ def update_graph(selected_date, shift_value, correlation_threshold, correlation_
     print('Date=[{}], Shift=[{}], Correlation Threshold=[{}], Correlation Change=[{}], Shift Hour=[{}], Clicks=[{}], Interval disabled=[{}], Parameter change=[{}]'.format(selected_date, shift_value, correlation_threshold, correlation_change, progress_value, n_clicks, interval_disabled, has_changed))
 
     G = nx.from_pandas_adjacency(filtered_df)
-    pos = nx.spring_layout(G)
+    pos = nx.circular_layout(G)
     edge_trace = []
     
     for edge in G.edges(data=True):
@@ -144,6 +167,7 @@ def update_graph(selected_date, shift_value, correlation_threshold, correlation_
         text=[],
         mode='markers+text',
         hoverinfo='text',
+        textposition = 'top center',
         marker=dict(
             showscale=True,
             colorscale='YlGnBu',

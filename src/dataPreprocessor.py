@@ -69,14 +69,21 @@ class DataPreprocessor():
         if not useNaN:
             correlation_matrix = correlation_matrix.fillna(0)
         return correlation_matrix
+    
+    def __filterByRunning(self,active=False):
+        if active:
+            self.df = self.df[self.df['runautomode_bool'] == 't']
+        else:
+            pass
 
     def __restart(self) -> None:
         self.df = self.df_goal.copy()
 
-    def GetData(self, date, shift:int, shiftHour:int, magnitude:float) -> pd.DataFrame:
+    def GetData(self, date, shift:int, shiftHour:int, magnitude:float, runningFilter=False) -> pd.DataFrame:
         # Filtering by day and shift
         self.__filterByDate(date)
         self.__filterByShift(shift)
+        self.__filterByRunning(runningFilter)
         data = self.__filterByHour(shiftHour)
         corr_matrix = self.__getCorrelationMatrix(data, magnitude, False)
         self.__restart()

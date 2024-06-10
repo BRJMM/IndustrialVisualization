@@ -12,7 +12,7 @@ class MachineSelector:
 
     def ExecuteSelection(self, machine:str) -> str:
         df_prep = self.__dataPreparation()
-        machines = ['primary','secondary']
+        machines = ['primary','secundary']
         if machine in machines:
             df_machine = df_prep[df_prep.drumpress == machine]
             df_machine = df_machine.pivot(index='date_time',columns='variable',values='value')
