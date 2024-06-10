@@ -22,7 +22,7 @@ hours_labels = ['Shift Start','First Hour', 'Second Hour', 'Third Hour', 'Fourth
 print('\n\n\n\n\n\n\n\nStarting execution ........................................\n')
 
 machineSelector = MachineSelector('/home/craav/pCloudDrive/Computer_Science_Master/Visualizacion_Informacion/Proyecto/IndustrialVisualization/data/data.csv')
-input_file_path = machineSelector.ExecuteSelection('secundary')
+input_file_path = machineSelector.ExecuteSelection('primary')
 
 inputNumberCreator = DccInputNumber()
 progress_value = 0
@@ -169,7 +169,7 @@ def update_graph(selected_date, shift_value, correlation_threshold, correlation_
         hoverinfo='text',
         textposition = 'top center',
         marker=dict(
-            showscale=True,
+            showscale=False,
             colorscale='YlGnBu',
             size=10,
             colorbar=dict(
