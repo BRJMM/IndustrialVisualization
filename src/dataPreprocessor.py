@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import time
 
-HOURS_IN_SHIFT = 1440
+HOURS_IN_SHIFT = 8
 
 class DataPreprocessor():
     """Creating a data preprocessor class."""
@@ -43,34 +43,12 @@ class DataPreprocessor():
         self.df = self.df[self.df['date_time'].dt.date == self.selectedDate]
 
     def __setHourShiftRange(self, shiftAsInt: int) -> None:
-
-        #shift I
-        start_I = 6*60
-        end_I = 13*60 + 59
-        numbers_range_I = range(start_I, end_I + 1)
-        shift_I_minutes = list(numbers_range_I)
-        #shift II
-        start_II = 14*60
-        end_II = 21*60 + 59
-        numbers_range_II = range(start_II, end_II + 1)
-        shift_II_minutes = list(numbers_range_II)
-        #shift III
-        start_IIIa = 22*60
-        end_IIIa = 23*60 + 59
-        numbers_range_IIIa = range(start_IIIa, end_IIIa + 1)
-
-        start_IIIb = 0*60
-        end_IIIb = 5*60 + 59
-        numbers_range_IIIb = range(start_IIIb, end_IIIb + 1)
-
-        shift_III_minutes = list(numbers_range_IIIa) + list(numbers_range_IIIb)
-
         if shiftAsInt == 1:
-            self.selectedShiftHourRange = shift_I_minutes
+            self.selectedShiftHourRange = [6,7,8,9,10,11,12,13]
         elif shiftAsInt == 2:
-            self.selectedShiftHourRange = shift_II_minutes
+            self.selectedShiftHourRange = [14,15,16,17,18,19,20,21]
         elif shiftAsInt == 3:
-            self.selectedShiftHourRange = shift_III_minutes
+            self.selectedShiftHourRange = [22,23,0,1,2,3,4,5]
         else:
             raise Exception('__setHourShiftRange: shift should be [1,2,3]')
 
@@ -82,7 +60,7 @@ class DataPreprocessor():
     def __filterByHour(self, hour:int) -> pd.DataFrame:
         copy = self.df.copy()
         hour = 0 if hour >= HOURS_IN_SHIFT else hour
-        return copy[(copy['date_time'].dt.hour*60 + copy['date_time'].dt.minute) == self.selectedShiftHourRange[hour]]
+        return copy[copy['date_time'].dt.hour == self.selectedShiftHourRange[hour]]
 
     def __getCorrelationMatrix(self, data:pd.DataFrame, magnitude: float, useNaN = False) -> pd.DataFrame:
         correlation_matrix = data.select_dtypes(include='number').corr()
