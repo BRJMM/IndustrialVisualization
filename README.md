@@ -11,7 +11,7 @@ pip install pandas plotly dash dash_daq networkx
 
 ## Usage
 
-[Video de uso Visualización de correlaciones en variables de procesos industriales] (https://www.youtube.com/watch?v=1DgIO4Q88YI)
+This link will take you to a [video](https://www.youtube.com/watch?v=1DgIO4Q88YI) that illustrates the usage.
 
 ### Render visualization
 Run following command from [repo]/src
